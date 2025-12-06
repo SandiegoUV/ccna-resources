@@ -1,0 +1,79 @@
+#####CSR 1000 installation in VMWARE
+
+STEP 1: Double click csr1000v-universalk9.17.03.01a (VOIP Features)
+STEP 2: Name of VM: CSR / Storage: ThisPC -> VM_Lab -> CSR
+STEP 3: Deployment Options: Small / Router Name: CSR / Login Name: admin / Login Password: pass / Confirm: pass
+STEP 4: Click "Import"
+STEP 5: Double click "Network Adapter" / Network Adapter: Select "Bridged" and check "Replicate ..."
+STEP 6: Wait to finish the boot
+
+#####CSR 1000 initial configuration
+
+en
+conf t
+int g1
+ip add 192.168.1.100 255.255.255.0 "same network as your laptop"
+no shut
+exit
+ena sec class
+line con 0
+pass cisco
+login
+line vty 0 4
+pass cisco
+login
+transport input all
+end
+show ip int br
+go to CMD ping 192.168.1.100
+
+#####TELNET CSR USING PUTTY
+
+Open Putty
+Select "other"
+Enter int g1 interface "192.168.1.100" then click open
+password "cisco"
+ena
+class
+
+#####CONFIGURE INTERNET CONNECTION
+
+conf t
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+ip name-server 8.8.8.8 1.1.1.1
+ip domain lookup
+end
+ping google.com
+
+#####CREATE ACL TO BLOCK TOP 3 PORNSITE
+
+Go to CMD ping top 3 pornsite
+get the IP Addresses paste on notepad
+
+conf t
+access-list 10 remark NOPORN
+access-list 10 deny 66.254.114.0 0.0.0.255
+access-list 10 permit any
+
+int g1
+ip access-group 10 in
+
+#####MODIFY ACL / BLOCK TORRENT SITES / FACEBOOK
+
+conf t
+no access-list 10
+int g1
+no ip access-group 10 in
+exit
+
+access-list 10 remark NOPORN
+access-list 10 deny 66.254.114.0 0.0.0.255
+access-list 10 remark NOTORRENT
+access-list 10 deny 162.159.137.0 0.0.0.255
+access-list 10 deny 76.223.54.0 0.0.0.255
+access-list 10 remark NOFACEBOOK
+access-list 10 deny 163.70.131.0 0.0.0.255
+access-list 10 permit any
+
+int g1
+ip access-group 10 in
